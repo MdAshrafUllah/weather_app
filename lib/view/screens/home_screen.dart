@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:weather_app/view/screens/search_screen.dart';
 import 'package:weather_app/view/utility/app_colors.dart';
 import 'package:weather_app/view/utility/assets_path.dart';
 import 'package:weather_app/view/widgets/app_bar_style.dart';
@@ -24,7 +26,9 @@ class _HomeScreenState extends State<HomeScreen> {
         'Chittagong, Bangladesh',
         arrow: true,
         leadingIcon: IconButton(
-          onPressed: () {},
+          onPressed: () {
+            Get.to(() => const SearchScreen());
+          },
           icon: const Icon(Icons.add),
         ),
       ),
