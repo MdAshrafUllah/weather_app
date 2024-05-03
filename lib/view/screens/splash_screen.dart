@@ -34,6 +34,7 @@ class _SplashScreenState extends State<SplashScreen> {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          const Spacer(),
           SvgPicture.asset(
             AssetsImagePath.appLogoSvg,
             height: 100,
@@ -54,6 +55,7 @@ class _SplashScreenState extends State<SplashScreen> {
               ),
             ),
           ),
+          const Spacer(),
           Text(
             '1.0.0',
             style: GoogleFonts.roboto(
@@ -62,6 +64,7 @@ class _SplashScreenState extends State<SplashScreen> {
               ),
             ),
           ),
+          const SizedBox(height: 16)
         ],
       ),
     );
