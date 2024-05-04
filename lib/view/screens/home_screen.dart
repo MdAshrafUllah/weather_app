@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:weather_app/view/screens/forecast_list_screen.dart';
 import 'package:weather_app/view/screens/search_screen.dart';
 import 'package:weather_app/view/utility/app_colors.dart';
 import 'package:weather_app/view/utility/assets_path.dart';
@@ -23,7 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: AppColors.primaryColor,
       appBar: appBarStyle(
-        'Chittagong, Bangladesh',
+        title: "Chittagong, Bangladesh",
         arrow: true,
         leadingIcon: IconButton(
           onPressed: () {
@@ -31,6 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
           },
           icon: const Icon(Icons.add),
         ),
+        menu: true,
       ),
       body: SingleChildScrollView(
         child: Center(
@@ -457,7 +459,9 @@ Widget todayTomorrowSunRise() {
 
 Widget forecastButton() {
   return GestureDetector(
-    onTap: () {},
+    onTap: () {
+      Get.to(() => const ForecastListScreen());
+    },
     child: Padding(
       padding: const EdgeInsets.all(10.0),
       child: SizedBox(

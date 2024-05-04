@@ -6,5 +6,5 @@ class Urls {
   static String forecast(String location, int day) =>
       "$_basedUrl/forecast.json?key=${WeatherApi.apiKey}&q=$location&days=$day";
   static String search(String location) =>
-      "$_basedUrl/search.json?key=${WeatherApi.apiKey}&q=$location";
+      "$_basedUrl/current.json?key=${WeatherApi.apiKey}&q=$location";
 }
