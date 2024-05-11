@@ -8,10 +8,21 @@ class WeatherApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Weather App',
       theme: ThemeData(
         colorSchemeSeed: AppColors.primaryColor,
         useMaterial3: true,
+        progressIndicatorTheme: const ProgressIndicatorThemeData(
+          color: AppColors.secondaryColor,
+        ),
+        textButtonTheme: TextButtonThemeData(
+          style: ButtonStyle(
+            foregroundColor: MaterialStateProperty.all<Color>(
+              AppColors.secondaryColor,
+            ),
+          ),
+        ),
       ),
       home: const SplashScreen(),
     );

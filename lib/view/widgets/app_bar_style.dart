@@ -11,6 +11,7 @@ AppBar appBarStyle({
   bool menu = false,
   bool locationIcon = false,
   String? location,
+  String? selectedLocation,
 }) {
   return AppBar(
     backgroundColor: AppColors.transparentColor,
@@ -21,15 +22,17 @@ AppBar appBarStyle({
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
         arrow == true
-            ? GestureDetector(
-                onTap: () {
-                  Get.to(() => const SaveListScreen());
+            ? TextButton(
+                onPressed: () {
+                  Get.to(() => SaveListScreen(
+                        selectedLocation: selectedLocation,
+                      ));
                 },
                 child: Text(
                   title!,
                   style: GoogleFonts.roboto(
                     textStyle: const TextStyle(
-                      fontWeight: FontWeight.w400,
+                      fontWeight: FontWeight.w500,
                       fontSize: 20,
                     ),
                   ),

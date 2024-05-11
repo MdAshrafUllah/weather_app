@@ -1,7 +1,11 @@
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:weather_app/controller/weather_controller.dart';
+import 'package:weather_app/models/forecastday.dart';
 import 'package:weather_app/view/screens/forecast_list_screen.dart';
 import 'package:weather_app/view/screens/search_screen.dart';
 import 'package:weather_app/view/utility/app_colors.dart';
@@ -10,65 +14,174 @@ import 'package:weather_app/view/widgets/app_bar_style.dart';
 import 'package:weather_app/view/widgets/sunrise_sunset.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
-
+  final String location;
+  const HomeScreen({
+    super.key,
+    required this.location,
+  });
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  Map<String, dynamic> forecast = {};
+  final WeatherController weatherController = Get.put(WeatherController());
+  double aqiValue = 0.0;
+  String appBarLocationPartTwo = "";
+  List<String> myCollection = [];
+  @override
+  void initState() {
+    super.initState();
+    checkAndFetchWeather();
+  }
+
+  void checkAndFetchWeather() async {
+    await savePlaceList();
+    if (myCollection.isEmpty) {
+      Get.off(() => const SearchScreen());
+    } else {
+      if (myCollection.contains(widget.location)) {
+        weatherController.fetchWeather(widget.location, 5);
+      } else {
+        weatherController.fetchWeather(myCollection.first, 5);
+        log(myCollection.toString());
+      }
+    }
+  }
+
+  Future<void> savePlaceList() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String>? savePlaces = prefs.getStringList('savePlaces');
+    if (savePlaces != null) {
+      setState(() {
+        myCollection = savePlaces;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.primaryColor,
-      appBar: appBarStyle(
-        title: "Chittagong, Bangladesh",
-        arrow: true,
-        leadingIcon: IconButton(
-          onPressed: () {
-            Get.to(() => const SearchScreen());
-          },
-          icon: const Icon(Icons.add),
-        ),
-        menu: true,
-      ),
-      body: SingleChildScrollView(
-        child: Center(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              currentTemperature(),
-              const SizedBox(
-                height: 20,
-              ),
-              currentAirQuality(),
-              const SizedBox(
-                height: 20,
-              ),
-              homeScreenForecastList(),
-              const SizedBox(
-                height: 5,
-              ),
-              currentWeatherMoreInfo(),
-              const SizedBox(
-                height: 5,
-              ),
-              todayTomorrowSunRise(),
-              const SizedBox(
-                height: 5,
-              ),
-              forecastButton(),
-            ],
+    return Obx(() {
+      if (weatherController.weather.value.current == null ||
+          weatherController.weather.value.current!.condition == null) {
+        return const Scaffold(
+          backgroundColor: AppColors.primaryColor,
+          body: Center(
+            child: CircularProgressIndicator(),
           ),
-        ),
-      ),
-    );
+        );
+      } else {
+        aqiCalculate();
+        return Scaffold(
+          backgroundColor: AppColors.primaryColor,
+          appBar: appBarStyle(
+            title: widget.location,
+            arrow: true,
+            leadingIcon: IconButton(
+              onPressed: () {
+                Get.to(() => const SearchScreen());
+              },
+              icon: const Icon(Icons.add),
+            ),
+            menu: true,
+            selectedLocation: widget.location,
+          ),
+          body: SingleChildScrollView(
+            child: Center(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  currentTemperature(
+                    weatherController.weather.value.current!.tempC as double,
+                    weatherController.weather.value.current!.condition!.text
+                        as String,
+                    weatherController.weather.value.forecast!.forecastday![0]
+                        .day!.maxtempC as double,
+                    weatherController.weather.value.forecast!.forecastday![0]
+                        .day!.mintempC as double,
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  currentAirQuality(aqiValue),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  homeScreenForecastList(
+                      weatherController.weather.value.forecast!.forecastday!),
+                  const SizedBox(
+                    height: 5,
+                  ),
+                  currentWeatherMoreInfo(
+                    weatherController.weather.value.current!.humidity as int,
+                    weatherController.weather.value.current!.uv as double,
+                    weatherController.weather.value.current!.feelslikeC
+                        as double,
+                    weatherController.weather.value.current!.windKph as double,
+                    weatherController.weather.value.current!.pressureIn
+                        as double,
+                    weatherController.weather.value.forecast!.forecastday![0]
+                        .day!.dailyChanceOfRain as int,
+                    aqiValue,
+                  ),
+                  const SizedBox(
+                    height: 5,
+                  ),
+                  todayTomorrowSunRise(
+                    weatherController.weather.value.forecast!.forecastday![0]
+                        .astro!.sunrise as String,
+                    weatherController.weather.value.forecast!.forecastday![0]
+                        .astro!.sunset as String,
+                    weatherController.weather.value.forecast!.forecastday![1]
+                        .astro!.sunrise as String,
+                    weatherController.weather.value.forecast!.forecastday![1]
+                        .astro!.sunset as String,
+                  ),
+                  const SizedBox(
+                    height: 5,
+                  ),
+                  forecastButton(),
+                ],
+              ),
+            ),
+          ),
+        );
+      }
+    });
+  }
+
+  void aqiCalculate() {
+    double pm25 =
+        weatherController.weather.value.current!.airQuality!.pm25 as double;
+    double pm10 =
+        weatherController.weather.value.current!.airQuality!.pm10 as double;
+    double so2 =
+        weatherController.weather.value.current!.airQuality!.so2 as double;
+    double no2 =
+        weatherController.weather.value.current!.airQuality!.no2 as double;
+    double o3 =
+        weatherController.weather.value.current!.airQuality!.o3 as double;
+    double maxAqi = 0.0;
+    if (pm25 > maxAqi) {
+      maxAqi = pm25;
+    }
+    if (pm10 > maxAqi) {
+      maxAqi = pm10;
+    }
+    if (so2 > maxAqi) {
+      maxAqi = so2;
+    }
+    if (no2 > maxAqi) {
+      maxAqi = no2;
+    }
+    if (o3 > maxAqi) {
+      maxAqi = o3;
+    }
+    aqiValue = maxAqi;
   }
 }
 
-Widget currentTemperature() {
+Widget currentTemperature(
+    double temp, String condition, double maxtemp, double mintemp) {
   return Column(
     children: [
       Row(
@@ -76,7 +189,7 @@ Widget currentTemperature() {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '30',
+            temp.toStringAsFixed(0),
             style: GoogleFonts.scada(
                 textStyle: const TextStyle(
               fontSize: 100,
@@ -102,19 +215,22 @@ Widget currentTemperature() {
           ),
         ],
       ),
-      Text(
-        "Cloudy 33°/23°",
-        style: GoogleFonts.roboto(
-            textStyle: const TextStyle(
-          color: AppColors.secondaryColor,
-          fontSize: 25,
-        )),
+      Center(
+        child: Text(
+          "$condition\n${maxtemp.toStringAsFixed(0)}°/${mintemp.toStringAsFixed(0)}°",
+          textAlign: TextAlign.center,
+          style: GoogleFonts.roboto(
+              textStyle: const TextStyle(
+            color: AppColors.secondaryColor,
+            fontSize: 20,
+          )),
+        ),
       ),
     ],
   );
 }
 
-Widget currentAirQuality() {
+Widget currentAirQuality(double airQuality) {
   return Container(
     height: 40,
     width: 130,
@@ -136,7 +252,7 @@ Widget currentAirQuality() {
           )),
         ),
         Text(
-          "- 45",
+          airQuality.toStringAsFixed(0),
           style: GoogleFonts.roboto(
               textStyle: const TextStyle(
             color: AppColors.secondaryColor,
@@ -148,7 +264,7 @@ Widget currentAirQuality() {
   );
 }
 
-Widget homeScreenForecastList() {
+Widget homeScreenForecastList(List<Forecastday> forecast) {
   return Padding(
     padding: const EdgeInsets.all(10.0),
     child: Container(
@@ -156,79 +272,85 @@ Widget homeScreenForecastList() {
         color: AppColors.shadeColor,
         borderRadius: BorderRadius.circular(10),
       ),
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 15, left: 15),
-            child: Row(
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                      color: AppColors.offWhiteColor,
-                      borderRadius: BorderRadius.circular(100)),
-                  child: const Padding(
-                    padding: EdgeInsets.all(3.0),
-                    child: Icon(
-                      Icons.more_vert,
-                      color: AppColors.secondaryColor,
+      child: Padding(
+        padding: const EdgeInsets.only(
+          right: 15,
+          left: 5,
+        ),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 15, left: 15),
+              child: Row(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                        color: AppColors.offWhiteColor,
+                        borderRadius: BorderRadius.circular(100)),
+                    child: const Padding(
+                      padding: EdgeInsets.all(3.0),
+                      child: Icon(
+                        Icons.more_vert,
+                        color: AppColors.secondaryColor,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(
-                  width: 10,
-                ),
-                Text(
-                  "Three day forecast",
-                  style: GoogleFonts.roboto(
-                      textStyle: TextStyle(
-                    color: AppColors.offWhiteColor,
-                  )),
-                )
-              ],
+                  const SizedBox(
+                    width: 10,
+                  ),
+                  Text(
+                    "Next Three days forecast",
+                    style: GoogleFonts.roboto(
+                        textStyle: const TextStyle(
+                      color: AppColors.secondaryColor,
+                    )),
+                  )
+                ],
+              ),
             ),
-          ),
-          ListView.builder(
+            ListView.builder(
+              physics: const NeverScrollableScrollPhysics(),
               shrinkWrap: true,
               itemCount: 3,
               itemBuilder: (BuildContext context, int index) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 15),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      const Icon(
-                        Icons.cloud,
+                final day = forecast[index + 1].day!;
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Image.network("https:${day.condition!.icon!}"),
+                    const Spacer(),
+                    Text(
+                      day.condition!.text!,
+                      style: GoogleFonts.roboto(
+                          textStyle: const TextStyle(
                         color: AppColors.secondaryColor,
-                      ),
-                      Text(
-                        "Today Cloudy",
-                        style: GoogleFonts.roboto(
-                            textStyle: const TextStyle(
-                          color: AppColors.secondaryColor,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w500,
-                        )),
-                      ),
-                      Text(
-                        "Cloudy 33°/23°",
-                        style: GoogleFonts.roboto(
-                            textStyle: const TextStyle(
-                          color: AppColors.secondaryColor,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w500,
-                        )),
-                      ),
-                    ],
-                  ),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      )),
+                    ),
+                    const Spacer(),
+                    Text(
+                      "${day.maxtempC!.toStringAsFixed(0)}°/${day.mintempC!.toStringAsFixed(0)}°",
+                      style: GoogleFonts.roboto(
+                          textStyle: const TextStyle(
+                        color: AppColors.secondaryColor,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      )),
+                    ),
+                  ],
                 );
-              }),
-        ],
+              },
+            ),
+          ],
+        ),
       ),
     ),
   );
 }
 
-Widget currentWeatherMoreInfo() {
+Widget currentWeatherMoreInfo(int humidity, double uv, double feelslike,
+    double wind, double pressure, int chanceOfRain, double airQuality) {
   return Padding(
     padding: const EdgeInsets.all(10.0),
     child: Container(
@@ -239,9 +361,9 @@ Widget currentWeatherMoreInfo() {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            humidityUVRealFeel(),
-            windDirectionPressureChanceOfRain(),
-            currentAirQualityBottomPart()
+            humidityUVRealFeel(humidity, uv, feelslike),
+            windDirectionPressureChanceOfRain(wind, pressure, chanceOfRain),
+            currentAirQualityBottomPart(airQuality)
           ],
         ),
       ),
@@ -249,7 +371,11 @@ Widget currentWeatherMoreInfo() {
   );
 }
 
-Widget humidityUVRealFeel() {
+Widget humidityUVRealFeel(
+  int humidity,
+  double uv,
+  double feelslike,
+) {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
@@ -268,7 +394,7 @@ Widget humidityUVRealFeel() {
               width: 10,
             ),
             Text(
-              "82%",
+              humidity.toString(),
               style: GoogleFonts.roboto(
                   textStyle: const TextStyle(
                 color: AppColors.secondaryColor,
@@ -293,7 +419,7 @@ Widget humidityUVRealFeel() {
               width: 10,
             ),
             Text(
-              "2",
+              uv.toStringAsFixed(0),
               style: GoogleFonts.roboto(
                   textStyle: const TextStyle(
                 color: AppColors.secondaryColor,
@@ -318,7 +444,7 @@ Widget humidityUVRealFeel() {
               width: 10,
             ),
             Text(
-              "28°",
+              "${feelslike.toStringAsFixed(0)}°",
               style: GoogleFonts.roboto(
                   textStyle: const TextStyle(
                 color: AppColors.secondaryColor,
@@ -332,7 +458,11 @@ Widget humidityUVRealFeel() {
   );
 }
 
-Widget windDirectionPressureChanceOfRain() {
+Widget windDirectionPressureChanceOfRain(
+  double wind,
+  double pressure,
+  int chanceOfRain,
+) {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
@@ -351,7 +481,7 @@ Widget windDirectionPressureChanceOfRain() {
               width: 10,
             ),
             Text(
-              "3km/h",
+              "$wind km/h",
               style: GoogleFonts.roboto(
                   textStyle: const TextStyle(
                 color: AppColors.secondaryColor,
@@ -376,7 +506,7 @@ Widget windDirectionPressureChanceOfRain() {
               width: 10,
             ),
             Text(
-              "21mbar",
+              "${pressure.toStringAsFixed(0)} mbar",
               style: GoogleFonts.roboto(
                   textStyle: const TextStyle(
                 color: AppColors.secondaryColor,
@@ -401,7 +531,7 @@ Widget windDirectionPressureChanceOfRain() {
               width: 10,
             ),
             Text(
-              "74%",
+              "$chanceOfRain %",
               style: GoogleFonts.roboto(
                   textStyle: const TextStyle(
                 color: AppColors.secondaryColor,
@@ -415,11 +545,11 @@ Widget windDirectionPressureChanceOfRain() {
   );
 }
 
-Widget currentAirQualityBottomPart() {
+Widget currentAirQualityBottomPart(double airQuality) {
   return Column(
     children: [
       Text(
-        "AQI - 45",
+        "AQI ${airQuality.toStringAsFixed(0)}",
         style: GoogleFonts.roboto(
             textStyle: const TextStyle(
           color: AppColors.secondaryColor,
@@ -436,7 +566,8 @@ Widget currentAirQualityBottomPart() {
   );
 }
 
-Widget todayTomorrowSunRise() {
+Widget todayTomorrowSunRise(String sunrise, String sunset,
+    String tomorrowSunrise, String tomorrowSunset) {
   return Padding(
     padding: const EdgeInsets.all(10.0),
     child: Row(
@@ -444,13 +575,13 @@ Widget todayTomorrowSunRise() {
       children: [
         sunriseSunset(
           "Today",
-          "05:20",
-          "06:20",
+          sunrise,
+          sunset,
         ),
         sunriseSunset(
           "Tomorrow",
-          "05:21",
-          "06:21",
+          tomorrowSunrise,
+          tomorrowSunset,
         ),
       ],
     ),

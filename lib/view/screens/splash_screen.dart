@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:weather_app/view/screens/home_screen.dart';
+import 'package:weather_app/view/screens/search_screen.dart';
 import 'package:weather_app/view/utility/app_colors.dart';
 import 'package:weather_app/view/utility/assets_path.dart';
 
@@ -24,7 +26,17 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _moveToNextScreen() async {
     await Future.delayed(const Duration(seconds: 3));
-    Get.off(() => const HomeScreen());
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool? firstTime = prefs.getBool('firstTime');
+    List<String>? savePlaces = prefs.getStringList('savePlaces');
+    if (firstTime == false || savePlaces == null || savePlaces.isEmpty) {
+      await prefs.setBool('firstTime', true);
+      Get.off(() => const SearchScreen());
+    } else {
+      Get.off(() => HomeScreen(
+            location: savePlaces[0],
+          ));
+    }
   }
 
   @override

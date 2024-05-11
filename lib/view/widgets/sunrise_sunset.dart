@@ -55,7 +55,7 @@ Widget sunriseSunset(
                     style: GoogleFonts.roboto(
                       textStyle: const TextStyle(
                         color: AppColors.secondaryColor,
-                        fontSize: 16,
+                        fontSize: 14,
                         fontWeight: FontWeight.w400,
                       ),
                     ),
@@ -65,7 +65,7 @@ Widget sunriseSunset(
                     style: GoogleFonts.roboto(
                       textStyle: const TextStyle(
                         color: AppColors.secondaryColor,
-                        fontSize: 25,
+                        fontSize: 16,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -83,7 +83,7 @@ Widget sunriseSunset(
                     style: GoogleFonts.roboto(
                       textStyle: const TextStyle(
                         color: AppColors.secondaryColor,
-                        fontSize: 16,
+                        fontSize: 14,
                         fontWeight: FontWeight.w400,
                       ),
                     ),
@@ -93,7 +93,7 @@ Widget sunriseSunset(
                     style: GoogleFonts.roboto(
                       textStyle: const TextStyle(
                         color: AppColors.secondaryColor,
-                        fontSize: 25,
+                        fontSize: 16,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
