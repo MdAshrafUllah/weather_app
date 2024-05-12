@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:weather_app/view/screens/save_list_screen.dart';
+import 'package:weather_app/view/screens/setting_screen.dart';
 import 'package:weather_app/view/utility/app_colors.dart';
 
 AppBar appBarStyle({
@@ -114,7 +115,9 @@ AppBar appBarStyle({
     actions: [
       menu == true
           ? IconButton(
-              onPressed: () {},
+              onPressed: () {
+                Get.to(() => const SettingScreen());
+              },
               icon: const Icon(Icons.more_vert),
             )
           : const SizedBox(),

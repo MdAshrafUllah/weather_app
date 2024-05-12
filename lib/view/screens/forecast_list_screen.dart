@@ -9,10 +9,12 @@ import 'package:weather_app/view/widgets/app_bar_style.dart';
 class ForecastListScreen extends StatelessWidget {
   final List<Forecastday> forecast;
   final String? location;
+  final String? temperatureUnitValue;
   const ForecastListScreen({
     super.key,
     required this.forecast,
     required this.location,
+    required this.temperatureUnitValue,
   });
 
   @override
@@ -101,7 +103,9 @@ class ForecastListScreen extends StatelessWidget {
                       height: 25,
                     ),
                     Text(
-                      '${forecast[index].day?.maxtempC!.toStringAsFixed(0)}°',
+                      temperatureUnitValue == "°C"
+                          ? '${forecast[index].day?.maxtempC!.toStringAsFixed(0)}°'
+                          : '${forecast[index].day?.maxtempF!.toStringAsFixed(0)}°',
                       style: GoogleFonts.roboto(
                         textStyle: const TextStyle(
                           color: AppColors.secondaryColor,
@@ -112,7 +116,9 @@ class ForecastListScreen extends StatelessWidget {
                     ),
                     const Spacer(),
                     Text(
-                      '${forecast[index].day?.mintempC!.toStringAsFixed(0)}°',
+                      temperatureUnitValue == "°C"
+                          ? '${forecast[index].day?.mintempC!.toStringAsFixed(0)}°'
+                          : '${forecast[index].day?.mintempF!.toStringAsFixed(0)}°',
                       style: GoogleFonts.roboto(
                         textStyle: const TextStyle(
                           color: AppColors.secondaryColor,

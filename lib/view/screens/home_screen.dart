@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:weather_app/controller/unit_controller.dart';
 import 'package:weather_app/controller/weather_controller.dart';
 import 'package:weather_app/models/forecastday.dart';
 import 'package:weather_app/view/screens/forecast_list_screen.dart';
@@ -25,13 +26,123 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final WeatherController weatherController = Get.put(WeatherController());
+  final UnitController unitController = Get.find();
   double aqiValue = 0.0;
   String appBarLocationPartTwo = "";
   List<String> myCollection = [];
+  double temperatureFormat = 0.0;
+  double maxTemperatureFormat = 0.0;
+  double minTemperatureFormat = 0.0;
+  double feelslikeTemperatureFormat = 0.0;
+  double windFormat = 0.0;
+
   @override
   void initState() {
     super.initState();
     checkAndFetchWeather();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      if (weatherController.weather.value.current == null ||
+          weatherController.weather.value.current!.condition == null) {
+        return const Scaffold(
+          backgroundColor: AppColors.primaryColor,
+          body: Center(
+            child: CircularProgressIndicator(),
+          ),
+        );
+      } else {
+        aqiCalculate();
+        temperatureUnitsCheck();
+        return Scaffold(
+          backgroundColor: AppColors.primaryColor,
+          appBar: appBarStyle(
+            title: widget.location,
+            arrow: true,
+            leadingIcon: IconButton(
+              onPressed: () {
+                Get.to(() => const SearchScreen());
+              },
+              icon: const Icon(Icons.add),
+            ),
+            menu: true,
+            selectedLocation: widget.location,
+            dayOrNight: weatherController.weather.value.current!.isDay,
+          ),
+          body: RefreshIndicator(
+            onRefresh: () async {
+              return checkAndFetchWeather();
+            },
+            child: SingleChildScrollView(
+              child: Center(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    currentTemperature(
+                      temperatureFormat,
+                      unitController.temperatureUnit.value,
+                      weatherController.weather.value.current!.condition!.text
+                          as String,
+                      maxTemperatureFormat,
+                      minTemperatureFormat,
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    currentAirQuality(aqiValue),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    homeScreenForecastList(
+                      weatherController.weather.value.forecast!.forecastday!,
+                      unitController.temperatureUnit.value,
+                    ),
+                    const SizedBox(
+                      height: 5,
+                    ),
+                    currentWeatherMoreInfo(
+                      weatherController.weather.value.current!.humidity as int,
+                      weatherController.weather.value.current!.uv as double,
+                      feelslikeTemperatureFormat,
+                      windFormat,
+                      unitController.windUnit.value,
+                      weatherController.weather.value.current!.pressureIn
+                          as double,
+                      weatherController.weather.value.forecast!.forecastday![0]
+                          .day!.dailyChanceOfRain as int,
+                      aqiValue,
+                    ),
+                    const SizedBox(
+                      height: 5,
+                    ),
+                    todayTomorrowSunRise(
+                      weatherController.weather.value.forecast!.forecastday![0]
+                          .astro!.sunrise as String,
+                      weatherController.weather.value.forecast!.forecastday![0]
+                          .astro!.sunset as String,
+                      weatherController.weather.value.forecast!.forecastday![1]
+                          .astro!.sunrise as String,
+                      weatherController.weather.value.forecast!.forecastday![1]
+                          .astro!.sunset as String,
+                    ),
+                    const SizedBox(
+                      height: 5,
+                    ),
+                    forecastButton(
+                      weatherController.weather.value.forecast!.forecastday!,
+                      widget.location,
+                      unitController.temperatureUnit.value,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      }
+    });
   }
 
   void checkAndFetchWeather() async {
@@ -58,105 +169,32 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Obx(() {
-      if (weatherController.weather.value.current == null ||
-          weatherController.weather.value.current!.condition == null) {
-        return const Scaffold(
-          backgroundColor: AppColors.primaryColor,
-          body: Center(
-            child: CircularProgressIndicator(),
-          ),
-        );
+  void temperatureUnitsCheck() {
+    final temperatureUnitValue = unitController.temperatureUnit.value;
+    final windUnitValue = unitController.windUnit.value;
+    final currentWeather = weatherController.weather.value.current;
+    final forecastWeather =
+        weatherController.weather.value.forecast!.forecastday![0].day!;
+
+    if (currentWeather != null) {
+      if (temperatureUnitValue == "°C") {
+        temperatureFormat = currentWeather.tempC as double;
+        maxTemperatureFormat = forecastWeather.maxtempC as double;
+        minTemperatureFormat = forecastWeather.mintempC as double;
+        feelslikeTemperatureFormat = currentWeather.feelslikeC as double;
       } else {
-        aqiCalculate();
-        log(weatherController.weather.value.current!.isDay.toString());
-        return Scaffold(
-          backgroundColor: AppColors.primaryColor,
-          appBar: appBarStyle(
-            title: widget.location,
-            arrow: true,
-            leadingIcon: IconButton(
-              onPressed: () {
-                Get.to(() => const SearchScreen());
-              },
-              icon: const Icon(Icons.add),
-            ),
-            menu: true,
-            selectedLocation: widget.location,
-            dayOrNight: weatherController.weather.value.current!.isDay,
-          ),
-          body: RefreshIndicator(
-            onRefresh: () async {
-              return checkAndFetchWeather();
-            },
-            child: SingleChildScrollView(
-              child: Center(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    currentTemperature(
-                      weatherController.weather.value.current!.tempC as double,
-                      weatherController.weather.value.current!.condition!.text
-                          as String,
-                      weatherController.weather.value.forecast!.forecastday![0]
-                          .day!.maxtempC as double,
-                      weatherController.weather.value.forecast!.forecastday![0]
-                          .day!.mintempC as double,
-                    ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    currentAirQuality(aqiValue),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    homeScreenForecastList(
-                        weatherController.weather.value.forecast!.forecastday!),
-                    const SizedBox(
-                      height: 5,
-                    ),
-                    currentWeatherMoreInfo(
-                      weatherController.weather.value.current!.humidity as int,
-                      weatherController.weather.value.current!.uv as double,
-                      weatherController.weather.value.current!.feelslikeC
-                          as double,
-                      weatherController.weather.value.current!.windKph
-                          as double,
-                      weatherController.weather.value.current!.pressureIn
-                          as double,
-                      weatherController.weather.value.forecast!.forecastday![0]
-                          .day!.dailyChanceOfRain as int,
-                      aqiValue,
-                    ),
-                    const SizedBox(
-                      height: 5,
-                    ),
-                    todayTomorrowSunRise(
-                      weatherController.weather.value.forecast!.forecastday![0]
-                          .astro!.sunrise as String,
-                      weatherController.weather.value.forecast!.forecastday![0]
-                          .astro!.sunset as String,
-                      weatherController.weather.value.forecast!.forecastday![1]
-                          .astro!.sunrise as String,
-                      weatherController.weather.value.forecast!.forecastday![1]
-                          .astro!.sunset as String,
-                    ),
-                    const SizedBox(
-                      height: 5,
-                    ),
-                    forecastButton(
-                        weatherController.weather.value.forecast!.forecastday!,
-                        widget.location),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
+        temperatureFormat = currentWeather.tempF as double;
+        maxTemperatureFormat = forecastWeather.maxtempF as double;
+        minTemperatureFormat = forecastWeather.mintempF as double;
+        feelslikeTemperatureFormat = currentWeather.feelslikeF as double;
       }
-    });
+
+      if (windUnitValue == "km/h") {
+        windFormat = currentWeather.windKph as double;
+      } else {
+        windFormat = currentWeather.windMph as double;
+      }
+    }
   }
 
   void aqiCalculate() {
@@ -190,8 +228,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-Widget currentTemperature(
-    double temp, String condition, double maxtemp, double mintemp) {
+Widget currentTemperature(double temp, String tempUnit, String condition,
+    double maxtemp, double mintemp) {
   return Column(
     children: [
       Row(
@@ -207,15 +245,7 @@ Widget currentTemperature(
             )),
           ),
           Text(
-            '°',
-            style: GoogleFonts.scada(
-                textStyle: const TextStyle(
-              fontSize: 50,
-              color: AppColors.secondaryColor,
-            )),
-          ),
-          Text(
-            'C',
+            tempUnit,
             style: GoogleFonts.roboto(
                 textStyle: const TextStyle(
               fontSize: 50,
@@ -274,7 +304,8 @@ Widget currentAirQuality(double airQuality) {
   );
 }
 
-Widget homeScreenForecastList(List<Forecastday> forecast) {
+Widget homeScreenForecastList(
+    List<Forecastday> forecast, String temperatureUnitValue) {
   return Padding(
     padding: const EdgeInsets.all(10.0),
     child: Container(
@@ -340,7 +371,9 @@ Widget homeScreenForecastList(List<Forecastday> forecast) {
                     ),
                     const Spacer(),
                     Text(
-                      "${day.maxtempC!.toStringAsFixed(0)}°/${day.mintempC!.toStringAsFixed(0)}°",
+                      temperatureUnitValue == "°C"
+                          ? "${day.maxtempC!.toStringAsFixed(0)}°/${day.mintempC!.toStringAsFixed(0)}°"
+                          : "${day.maxtempF!.toStringAsFixed(0)}°/${day.mintempF!.toStringAsFixed(0)}°",
                       style: GoogleFonts.roboto(
                           textStyle: const TextStyle(
                         color: AppColors.secondaryColor,
@@ -359,8 +392,15 @@ Widget homeScreenForecastList(List<Forecastday> forecast) {
   );
 }
 
-Widget currentWeatherMoreInfo(int humidity, double uv, double feelslike,
-    double wind, double pressure, int chanceOfRain, double airQuality) {
+Widget currentWeatherMoreInfo(
+    int humidity,
+    double uv,
+    double feelslike,
+    double wind,
+    String windUnit,
+    double pressure,
+    int chanceOfRain,
+    double airQuality) {
   return Padding(
     padding: const EdgeInsets.all(10.0),
     child: Container(
@@ -372,7 +412,8 @@ Widget currentWeatherMoreInfo(int humidity, double uv, double feelslike,
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             humidityUVRealFeel(humidity, uv, feelslike),
-            windDirectionPressureChanceOfRain(wind, pressure, chanceOfRain),
+            windDirectionPressureChanceOfRain(
+                wind, windUnit, pressure, chanceOfRain),
             currentAirQualityBottomPart(airQuality)
           ],
         ),
@@ -470,6 +511,7 @@ Widget humidityUVRealFeel(
 
 Widget windDirectionPressureChanceOfRain(
   double wind,
+  String windUnit,
   double pressure,
   int chanceOfRain,
 ) {
@@ -491,7 +533,7 @@ Widget windDirectionPressureChanceOfRain(
               width: 10,
             ),
             Text(
-              "$wind km/h",
+              "${wind.toStringAsFixed(0)} $windUnit",
               style: GoogleFonts.roboto(
                   textStyle: const TextStyle(
                 color: AppColors.secondaryColor,
@@ -598,12 +640,14 @@ Widget todayTomorrowSunRise(String sunrise, String sunset,
   );
 }
 
-Widget forecastButton(List<Forecastday> forecast, String location) {
+Widget forecastButton(
+    List<Forecastday> forecast, String location, String temperatureUnitValue) {
   return GestureDetector(
     onTap: () {
       Get.to(() => ForecastListScreen(
             forecast: forecast,
             location: location,
+            temperatureUnitValue: temperatureUnitValue,
           ));
     },
     child: Padding(
