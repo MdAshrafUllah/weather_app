@@ -1,10 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
+
+import 'package:weather_app/models/forecastday.dart';
 import 'package:weather_app/view/utility/app_colors.dart';
 import 'package:weather_app/view/widgets/app_bar_style.dart';
 
 class ForecastListScreen extends StatelessWidget {
-  const ForecastListScreen({super.key});
+  final List<Forecastday> forecast;
+  final String? location;
+  const ForecastListScreen({
+    super.key,
+    required this.forecast,
+    required this.location,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -13,15 +22,15 @@ class ForecastListScreen extends StatelessWidget {
       appBar: appBarStyle(
         title: "5-day forecast",
         locationIcon: true,
-        location: "Chittagong, Bangladesh",
+        selectedLocation: location,
       ),
       body: Padding(
         padding: const EdgeInsets.all(10.0),
         child: Column(
           children: [
-            forecastList(),
+            forecastList(forecast),
             SizedBox(
-              height: MediaQuery.of(context).size.height / 2,
+              height: MediaQuery.of(context).size.height / 2.2,
             )
           ],
         ),
@@ -29,25 +38,38 @@ class ForecastListScreen extends StatelessWidget {
     );
   }
 
-  Widget forecastList() {
+  Widget forecastList(List<Forecastday> forecast) {
     return Expanded(
       child: ListView.builder(
+        physics: const NeverScrollableScrollPhysics(),
         shrinkWrap: true,
         scrollDirection: Axis.horizontal,
         itemCount: 5,
         itemBuilder: (context, index) {
+          DateTime forecastDate = DateTime.parse(forecast[index].date ?? 'N/A');
+          bool isCurrentDate = DateTime.now().day == forecastDate.day &&
+              DateTime.now().month == forecastDate.month &&
+              DateTime.now().year == forecastDate.year;
+          Color containerColor =
+              isCurrentDate ? AppColors.offWhiteColor : AppColors.shadeColor;
           return Padding(
             padding: const EdgeInsets.only(right: 8),
             child: Container(
               decoration: BoxDecoration(
-                  color: AppColors.shadeColor,
+                  color: containerColor,
                   borderRadius: BorderRadius.circular(10)),
               child: Padding(
-                padding: const EdgeInsets.all(8.0),
+                padding: const EdgeInsets.only(
+                  top: 15,
+                  left: 1.8,
+                  right: 1.8,
+                ),
                 child: Column(
                   children: [
                     Text(
-                      'Today',
+                      DateFormat('EEE').format(
+                        DateTime.parse(forecast[index].date ?? 'N/A'),
+                      ),
                       style: GoogleFonts.roboto(
                         textStyle: const TextStyle(
                           color: AppColors.secondaryColor,
@@ -60,7 +82,9 @@ class ForecastListScreen extends StatelessWidget {
                       height: 5,
                     ),
                     Text(
-                      '4/30',
+                      DateFormat('dd/MM').format(
+                        DateTime.parse(forecast[index].date ?? 'N/A'),
+                      ),
                       style: GoogleFonts.roboto(
                         textStyle: const TextStyle(
                           color: AppColors.secondaryColor,
@@ -71,15 +95,13 @@ class ForecastListScreen extends StatelessWidget {
                     const SizedBox(
                       height: 25,
                     ),
-                    const Icon(
-                      Icons.cloud,
-                      color: AppColors.secondaryColor,
-                    ),
+                    Image.network(
+                        "https:${forecast[index].day?.condition!.icon!}"),
                     const SizedBox(
                       height: 25,
                     ),
                     Text(
-                      '30°',
+                      '${forecast[index].day?.maxtempC!.toStringAsFixed(0)}°',
                       style: GoogleFonts.roboto(
                         textStyle: const TextStyle(
                           color: AppColors.secondaryColor,
@@ -90,7 +112,7 @@ class ForecastListScreen extends StatelessWidget {
                     ),
                     const Spacer(),
                     Text(
-                      '27°',
+                      '${forecast[index].day?.mintempC!.toStringAsFixed(0)}°',
                       style: GoogleFonts.roboto(
                         textStyle: const TextStyle(
                           color: AppColors.secondaryColor,
@@ -100,7 +122,7 @@ class ForecastListScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(
-                      height: 25,
+                      height: 20,
                     ),
                   ],
                 ),

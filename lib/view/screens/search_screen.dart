@@ -161,7 +161,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       ),
                     ),
                     trailing: Text(
-                      temp.toStringAsFixed(0),
+                      "${temp.toStringAsFixed(0)}°",
                       style: GoogleFonts.roboto(
                         textStyle: const TextStyle(
                           color: AppColors.secondaryColor,

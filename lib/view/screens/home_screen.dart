@@ -71,6 +71,7 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       } else {
         aqiCalculate();
+        log(weatherController.weather.value.current!.isDay.toString());
         return Scaffold(
           backgroundColor: AppColors.primaryColor,
           appBar: appBarStyle(
@@ -84,63 +85,72 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             menu: true,
             selectedLocation: widget.location,
+            dayOrNight: weatherController.weather.value.current!.isDay,
           ),
-          body: SingleChildScrollView(
-            child: Center(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  currentTemperature(
-                    weatherController.weather.value.current!.tempC as double,
-                    weatherController.weather.value.current!.condition!.text
-                        as String,
-                    weatherController.weather.value.forecast!.forecastday![0]
-                        .day!.maxtempC as double,
-                    weatherController.weather.value.forecast!.forecastday![0]
-                        .day!.mintempC as double,
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  currentAirQuality(aqiValue),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  homeScreenForecastList(
-                      weatherController.weather.value.forecast!.forecastday!),
-                  const SizedBox(
-                    height: 5,
-                  ),
-                  currentWeatherMoreInfo(
-                    weatherController.weather.value.current!.humidity as int,
-                    weatherController.weather.value.current!.uv as double,
-                    weatherController.weather.value.current!.feelslikeC
-                        as double,
-                    weatherController.weather.value.current!.windKph as double,
-                    weatherController.weather.value.current!.pressureIn
-                        as double,
-                    weatherController.weather.value.forecast!.forecastday![0]
-                        .day!.dailyChanceOfRain as int,
-                    aqiValue,
-                  ),
-                  const SizedBox(
-                    height: 5,
-                  ),
-                  todayTomorrowSunRise(
-                    weatherController.weather.value.forecast!.forecastday![0]
-                        .astro!.sunrise as String,
-                    weatherController.weather.value.forecast!.forecastday![0]
-                        .astro!.sunset as String,
-                    weatherController.weather.value.forecast!.forecastday![1]
-                        .astro!.sunrise as String,
-                    weatherController.weather.value.forecast!.forecastday![1]
-                        .astro!.sunset as String,
-                  ),
-                  const SizedBox(
-                    height: 5,
-                  ),
-                  forecastButton(),
-                ],
+          body: RefreshIndicator(
+            onRefresh: () async {
+              return checkAndFetchWeather();
+            },
+            child: SingleChildScrollView(
+              child: Center(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    currentTemperature(
+                      weatherController.weather.value.current!.tempC as double,
+                      weatherController.weather.value.current!.condition!.text
+                          as String,
+                      weatherController.weather.value.forecast!.forecastday![0]
+                          .day!.maxtempC as double,
+                      weatherController.weather.value.forecast!.forecastday![0]
+                          .day!.mintempC as double,
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    currentAirQuality(aqiValue),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    homeScreenForecastList(
+                        weatherController.weather.value.forecast!.forecastday!),
+                    const SizedBox(
+                      height: 5,
+                    ),
+                    currentWeatherMoreInfo(
+                      weatherController.weather.value.current!.humidity as int,
+                      weatherController.weather.value.current!.uv as double,
+                      weatherController.weather.value.current!.feelslikeC
+                          as double,
+                      weatherController.weather.value.current!.windKph
+                          as double,
+                      weatherController.weather.value.current!.pressureIn
+                          as double,
+                      weatherController.weather.value.forecast!.forecastday![0]
+                          .day!.dailyChanceOfRain as int,
+                      aqiValue,
+                    ),
+                    const SizedBox(
+                      height: 5,
+                    ),
+                    todayTomorrowSunRise(
+                      weatherController.weather.value.forecast!.forecastday![0]
+                          .astro!.sunrise as String,
+                      weatherController.weather.value.forecast!.forecastday![0]
+                          .astro!.sunset as String,
+                      weatherController.weather.value.forecast!.forecastday![1]
+                          .astro!.sunrise as String,
+                      weatherController.weather.value.forecast!.forecastday![1]
+                          .astro!.sunset as String,
+                    ),
+                    const SizedBox(
+                      height: 5,
+                    ),
+                    forecastButton(
+                        weatherController.weather.value.forecast!.forecastday!,
+                        widget.location),
+                  ],
+                ),
               ),
             ),
           ),
@@ -588,10 +598,13 @@ Widget todayTomorrowSunRise(String sunrise, String sunset,
   );
 }
 
-Widget forecastButton() {
+Widget forecastButton(List<Forecastday> forecast, String location) {
   return GestureDetector(
     onTap: () {
-      Get.to(() => const ForecastListScreen());
+      Get.to(() => ForecastListScreen(
+            forecast: forecast,
+            location: location,
+          ));
     },
     child: Padding(
       padding: const EdgeInsets.all(10.0),

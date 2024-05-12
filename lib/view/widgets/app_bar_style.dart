@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -12,7 +14,14 @@ AppBar appBarStyle({
   bool locationIcon = false,
   String? location,
   String? selectedLocation,
+  int? dayOrNight,
 }) {
+  String truncatedTitle = title?.split(' ').take(2).join(' ') ?? '';
+  String truncatedSelectedLocation =
+      selectedLocation?.split(' ').take(2).join(' ') ?? '';
+
+  log(dayOrNight.toString());
+
   return AppBar(
     backgroundColor: AppColors.transparentColor,
     foregroundColor: AppColors.secondaryColor,
@@ -22,37 +31,70 @@ AppBar appBarStyle({
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
         arrow == true
-            ? TextButton(
-                onPressed: () {
+            ? GestureDetector(
+                onTap: () {
                   Get.to(() => SaveListScreen(
                         selectedLocation: selectedLocation,
                       ));
                 },
                 child: Text(
-                  title!,
+                  truncatedTitle,
                   style: GoogleFonts.roboto(
                     textStyle: const TextStyle(
                       fontWeight: FontWeight.w500,
-                      fontSize: 20,
+                      fontSize: 18,
                     ),
                   ),
                 ),
               )
             : Text(
-                title!,
+                truncatedTitle,
                 style: GoogleFonts.roboto(
                   textStyle: const TextStyle(
                     fontWeight: FontWeight.w400,
-                    fontSize: 20,
+                    fontSize: 18,
                   ),
                 ),
               ),
         arrow == true
             ? const Icon(Icons.arrow_forward_ios_rounded)
             : const SizedBox(),
+        const Spacer(),
+        menu == true
+            ? dayOrNight == 1
+                ? const Text(
+                    "Day",
+                    style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  )
+                : const Text(
+                    "Night",
+                    style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.secondaryColor,
+                    ),
+                  )
+            : const SizedBox(),
         const SizedBox(
-          width: 10,
+          width: 5,
         ),
+        menu == true
+            ? dayOrNight == 1
+                ? const Icon(
+                    Icons.wb_sunny,
+                    size: 18,
+                  )
+                : const RotationTransition(
+                    turns: AlwaysStoppedAnimation(-45 / 360),
+                    child: Icon(
+                      Icons.nightlight_round_sharp,
+                      size: 18,
+                    ),
+                  )
+            : const SizedBox(),
         locationIcon == true
             ? const Icon(
                 Icons.pin_drop,
@@ -61,9 +103,9 @@ AppBar appBarStyle({
             : const SizedBox(),
         locationIcon == true
             ? Text(
-                "$location",
+                truncatedSelectedLocation,
                 style: const TextStyle(
-                  fontSize: 14,
+                  fontSize: 16,
                 ),
               )
             : const SizedBox(),
