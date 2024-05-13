@@ -41,6 +41,7 @@ https://github.com/MdAshrafUllah/weather_app/assets/96839511/0ffed94d-425a-4786-
 
 ## Dewonloiad Apk
 
-   [Download APK - Support android-arm64 - 7.4 MB](https://drive.google.com/file/d/1DQ_lQADd-_bMMMt7N5fj10F3v4DaInTk/view?usp=sharing)
+   [Download APK - Support android-arm64 - 7.4 MB](https://drive.google.com/file/d/1kQTEUwUsNgbuCYl69uj9bAx4qEVjwEj0/view?usp=sharing)
 
-   [Download APK - Support Any Android - 20.9 MB](https://drive.google.com/file/d/1q_jKatUbPnalbxT8q173qmDMq8wP2cEX/view?usp=sharing)
+   [Download APK - Support Any Android - 20.9 MB](https://drive.google.com/file/d/1RilePTU3MtpdKlS4g6oHSA6JvK5F2aCK/view?usp=sharing)
+
