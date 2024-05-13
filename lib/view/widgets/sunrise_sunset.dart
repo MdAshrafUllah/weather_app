@@ -1,4 +1,6 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:weather_app/view/utility/app_colors.dart';
@@ -29,7 +31,7 @@ Widget sunriseSunset(
                 )),
               ),
               const SizedBox(
-                width: 20,
+                width: 15,
               ),
               SvgPicture.asset(
                 AssetsImagePath.sunriseSvg,
@@ -38,7 +40,7 @@ Widget sunriseSunset(
                   AppColors.amberColor,
                   BlendMode.srcIn,
                 ),
-                height: 60,
+                height: 40,
               ),
             ],
           ),
@@ -65,7 +67,7 @@ Widget sunriseSunset(
                     style: GoogleFonts.roboto(
                       textStyle: const TextStyle(
                         color: AppColors.secondaryColor,
-                        fontSize: 16,
+                        fontSize: 15,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -73,7 +75,7 @@ Widget sunriseSunset(
                 ],
               ),
               const SizedBox(
-                width: 20,
+                width: 15,
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -93,7 +95,7 @@ Widget sunriseSunset(
                     style: GoogleFonts.roboto(
                       textStyle: const TextStyle(
                         color: AppColors.secondaryColor,
-                        fontSize: 16,
+                        fontSize: 15,
                         fontWeight: FontWeight.w500,
                       ),
                     ),

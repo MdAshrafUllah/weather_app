@@ -43,7 +43,6 @@ class ForecastListScreen extends StatelessWidget {
   Widget forecastList(List<Forecastday> forecast) {
     return Expanded(
       child: ListView.builder(
-        physics: const NeverScrollableScrollPhysics(),
         shrinkWrap: true,
         scrollDirection: Axis.horizontal,
         itemCount: 5,
