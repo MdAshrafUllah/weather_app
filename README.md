@@ -52,10 +52,7 @@ Welcome to Weather App, your ultimate companion for checking the weather on-the-
 https://github.com/MdAshrafUllah/weather_app/assets/96839511/0ffed94d-425a-4786-96ed-7b159bb926fd
 
 ## Dewonloiad Apk
-
-   [Download APK - Support android-arm64 - 7.4 MB](https://drive.google.com/file/d/1kQTEUwUsNgbuCYl69uj9bAx4qEVjwEj0/view?usp=sharing)
-
-   [Download APK - Support Any Android - 20.9 MB](https://drive.google.com/file/d/1RilePTU3MtpdKlS4g6oHSA6JvK5F2aCK/view?usp=sharing)
+   [Download APK - Support Any Android - 20.9 MB](https://drive.google.com/file/d/1w5vQ2qQwE_43qoZxEa1ttZXnAXjVoWnq/view?usp=sharing)
 
 
 ## Setup and Run
