@@ -51,7 +51,7 @@ Welcome to Weather App, your ultimate companion for checking the weather on-the-
 </table>
 
 ## Video Demo
-https://github.com/MdAshrafUllah/weather_app/assets/96839511/0ffed94d-425a-4786-96ed-7b159bb926fd
+[watch demo video](output/output.mp4)
 
 ## Dewonloiad Apk
    [Download APK - Support Any Android - 20.9 MB](https://drive.google.com/file/d/1w5vQ2qQwE_43qoZxEa1ttZXnAXjVoWnq/view?usp=sharing)
